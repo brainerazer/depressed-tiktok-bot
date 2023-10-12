@@ -81,11 +81,12 @@ async def download_and_reply(message: types.Message) -> None:
         def download_video():
             with YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(message.text, download=False)
-                return info['url']
+                return info
 
-        video_url = await asyncio.get_event_loop().run_in_executor(None, download_video)
+        video_info = await asyncio.get_event_loop().run_in_executor(None, download_video)
+        video_url = video_info['url']
         tg_file = URLInputFile(video_url)
-        await message.reply_video(tg_file)
+        await message.reply_video(tg_file, width=video_info.get('width'), height=video_info.get('height'))
 
     else:
         loop = asyncio.get_event_loop()
