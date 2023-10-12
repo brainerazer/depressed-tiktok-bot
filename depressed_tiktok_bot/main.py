@@ -78,14 +78,14 @@ async def download_and_reply(message: types.Message) -> None:
         'outtmpl': f'{tt_slug}.%(ext)s'
     }
     if not check_if_slideshow(message.text):
-        with YoutubeDL(ydl_opts) as ydl:
-            def download_video():
-                info = ydl.extract_info('https://vm.tiktok.com/ZMjxG2hXV', download=False)
+        def download_video():
+            with YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(message.text, download=False)
                 return info['url']
 
-            video_url = await asyncio.get_event_loop().run_in_executor(None, download_video)
-            tg_file = URLInputFile(video_url)
-            await message.reply_video(tg_file)
+        video_url = await asyncio.get_event_loop().run_in_executor(None, download_video)
+        tg_file = URLInputFile(video_url)
+        await message.reply_video(tg_file)
 
     else:
         loop = asyncio.get_event_loop()
