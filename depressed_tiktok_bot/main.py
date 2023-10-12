@@ -95,7 +95,7 @@ async def download_and_reply(message: types.Message) -> None:
 
         tg_images_chunked = list(chunks(tg_images, 10))
         await message.reply_media_group(tg_images_chunked[0])
-        for chunk in tg_images_chunked:
+        for chunk in tg_images_chunked[1:]:
             await message.answer_media_group(chunk)
         await message.answer_audio(tg_music)
 
