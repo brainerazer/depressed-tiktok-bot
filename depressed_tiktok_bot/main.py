@@ -14,7 +14,7 @@ from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
 from aiogram.types import Message
 from aiogram.utils.markdown import hbold
-from aiogram.types import FSInputFile, URLInputFile, InputMediaPhoto, InputMediaAudio
+from aiogram.types import URLInputFile, InputMediaPhoto, InputMediaAudio
 
 from yt_dlp import YoutubeDL
 
@@ -80,11 +80,13 @@ async def download_and_reply(message: types.Message) -> None:
     if not check_if_slideshow(message.text):
         with YoutubeDL(ydl_opts) as ydl:
             def download_video():
-                ydl.download([message.text])
-            await asyncio.get_event_loop().run_in_executor(None, download_video)
-            tg_file = FSInputFile(f'{tt_slug}.mp4')
+                info = ydl.extract_info('https://vm.tiktok.com/ZMjxG2hXV', download=False)
+                return info['url']
+
+            video_url = await asyncio.get_event_loop().run_in_executor(None, download_video)
+            tg_file = URLInputFile(video_url)
             await message.reply_video(tg_file)
-            os.remove(f'{tt_slug}.mp4')
+
     else:
         loop = asyncio.get_event_loop()
         slideshow_data = await loop.run_in_executor(None, get_slideshow_from_post_URL, message.text)
