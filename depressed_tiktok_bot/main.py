@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import os
 import sys
 from os import getenv
 from urllib.parse import urlparse
@@ -49,6 +50,7 @@ async def download_and_reply(message: types.Message) -> None:
 
     tg_file = FSInputFile(f'{tt_slug}.mp4')
     await message.reply_video(tg_file)
+    os.remove(f'{tt_slug}.mp4')
 
 
 @dp.message()
