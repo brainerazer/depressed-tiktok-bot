@@ -1,13 +1,20 @@
 import asyncio
+import json
 import logging
 import sys
 from os import getenv
+from urllib.parse import urlparse
 
 from aiogram import Bot, Dispatcher, Router, types
 from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
 from aiogram.types import Message
 from aiogram.utils.markdown import hbold
+from aiogram.types import FSInputFile
+
+from yt_dlp import YoutubeDL
+
+import validators
 
 # Bot token can be obtained via https://t.me/BotFather
 TOKEN = getenv("BOT_TOKEN")
@@ -28,6 +35,21 @@ async def command_start_handler(message: Message) -> None:
     # Bot instance: `bot.send_message(chat_id=message.chat.id, ...)`
     await message.answer(f"Hello, {hbold(message.from_user.full_name)}!")
 
+async def download_and_reply(message: types.Message) -> None:
+    parsed_url = urlparse(message.text)
+    tt_slug = parsed_url.path.strip('/')
+    ydl_opts = {
+        'outtmpl': f'{tt_slug}.%(ext)s'
+    }
+    with YoutubeDL(ydl_opts) as ydl:
+        def download_video():
+            ydl.download([message.text])
+        await asyncio.get_event_loop().run_in_executor(None, download_video)
+        # ℹ️ ydl.sanitize_info makes the info json-serializable
+
+    tg_file = FSInputFile(f'{tt_slug}.mp4')
+    await message.reply_video(tg_file)
+
 
 @dp.message()
 async def echo_handler(message: types.Message) -> None:
@@ -37,8 +59,12 @@ async def echo_handler(message: types.Message) -> None:
     By default, message handler will handle all message types (like a text, photo, sticker etc.)
     """
     try:
-        # Send a copy of the received message
-        await message.send_copy(chat_id=message.chat.id)
+        if validators.url(message.text):
+            parsed_url = urlparse(message.text)
+            if parsed_url.scheme != 'https' or parsed_url.netloc != 'vm.tiktok.com':
+                return
+            
+            await download_and_reply(message)
     except TypeError:
         # But not all the types is supported to be copied so need to handle it
         await message.answer("Nice try!")

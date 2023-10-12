@@ -9,6 +9,7 @@ readme = "README.md"
 python = "^3.11"
 aiogram = "^3.1.1"
 yt-dlp = "^2023.10.7"
+validators = "^0.22.0"
 
 
 [build-system]
