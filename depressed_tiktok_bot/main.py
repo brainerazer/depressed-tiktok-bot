@@ -89,7 +89,7 @@ async def download_and_reply(message: types.Message) -> None:
         try:
             await message.reply_video(tg_file, width=video_info.get('width'), height=video_info.get('height'))
         except exceptions.TelegramServerError:
-            asyncio.sleep(1)
+            await asyncio.sleep(1)
             await message.reply_video(tg_file, width=video_info.get('width'), height=video_info.get('height'))
 
     else:
