@@ -9,7 +9,7 @@ import sys
 from os import getenv
 from urllib.parse import urlparse
 
-from aiogram import Bot, Dispatcher, Router, types
+from aiogram import Bot, Dispatcher, Router, types, exceptions
 from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
 from aiogram.types import Message
@@ -86,7 +86,11 @@ async def download_and_reply(message: types.Message) -> None:
         video_info = await asyncio.get_event_loop().run_in_executor(None, download_video)
         video_url = video_info['url']
         tg_file = URLInputFile(video_url)
-        await message.reply_video(tg_file, width=video_info.get('width'), height=video_info.get('height'))
+        try:
+            await message.reply_video(tg_file, width=video_info.get('width'), height=video_info.get('height'))
+        except exceptions.TelegramServerError:
+            asyncio.sleep(1)
+            await message.reply_video(tg_file, width=video_info.get('width'), height=video_info.get('height'))
 
     else:
         loop = asyncio.get_event_loop()
