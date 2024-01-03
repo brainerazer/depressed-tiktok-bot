@@ -10,6 +10,7 @@ python = "^3.11"
 aiogram = "^3.1.1"
 yt-dlp = "^2023.10.7"
 validators = "^0.22.0"
+urlextract = "^1.8.0"
 
 
 [build-system]

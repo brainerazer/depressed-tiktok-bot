@@ -18,6 +18,8 @@ from aiogram.types import URLInputFile, InputMediaPhoto, InputMediaAudio
 
 from yt_dlp import YoutubeDL
 
+from urlextract import URLExtract
+
 import validators
 
 # Bot token can be obtained via https://t.me/BotFather
@@ -71,16 +73,16 @@ def get_slideshow_from_post_URL(url): # thsi function assumes the url is a slide
 
         return finalData
 
-async def download_and_reply(message: types.Message) -> None:
-    parsed_url = urlparse(message.text)
+async def download_and_reply(message: types.Message, url: str) -> None:
+    parsed_url = urlparse(url)
     tt_slug = parsed_url.path.strip('/')
     ydl_opts = {
         'outtmpl': f'{tt_slug}.%(ext)s'
     }
-    if not check_if_slideshow(message.text):
+    if not check_if_slideshow(url):
         def download_video():
             with YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(message.text, download=False)
+                info = ydl.extract_info(url, download=False)
                 return info
 
         video_info = await asyncio.get_event_loop().run_in_executor(None, download_video)
@@ -94,7 +96,7 @@ async def download_and_reply(message: types.Message) -> None:
 
     else:
         loop = asyncio.get_event_loop()
-        slideshow_data = await loop.run_in_executor(None, get_slideshow_from_post_URL, message.text)
+        slideshow_data = await loop.run_in_executor(None, get_slideshow_from_post_URL, url)
         tg_images = [InputMediaPhoto(media=URLInputFile(x)) for x in slideshow_data['imageURLs']]
         tg_music = URLInputFile(slideshow_data['musicURL'])
 
@@ -114,12 +116,13 @@ async def echo_handler(message: types.Message) -> None:
     By default, message handler will handle all message types (like a text, photo, sticker etc.)
     """
     try:
-        if validators.url(message.text):
-            parsed_url = urlparse(message.text)
-            if parsed_url.scheme != 'https' or parsed_url.netloc != 'vm.tiktok.com':
-                return
-            
-            await download_and_reply(message)
+        for url in URLExtract.gen_urls(message.text):
+            if validators.url(url):
+                parsed_url = urlparse(url)
+                if parsed_url.scheme != 'https' or parsed_url.netloc != 'vm.tiktok.com':
+                    return
+                
+                await download_and_reply(message, url)
     except TypeError:
         raise
 
