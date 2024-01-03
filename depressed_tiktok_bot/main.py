@@ -116,7 +116,8 @@ async def echo_handler(message: types.Message) -> None:
     By default, message handler will handle all message types (like a text, photo, sticker etc.)
     """
     try:
-        for url in URLExtract.gen_urls(message.text):
+        extractor = URLExtract()
+        for url in extractor.gen_urls(message.text):
             if validators.url(url):
                 parsed_url = urlparse(url)
                 if parsed_url.scheme != 'https' or parsed_url.netloc != 'vm.tiktok.com':
