@@ -12,7 +12,8 @@ yt-dlp = "^2023.12.30"
 validators = "^0.22.0"
 urlextract = "^1.8.0"
 
-[tool.poetry.group.test]  # This part can be left out
+[tool.poetry.group.test]
+optional = true
 
 [tool.poetry.group.test.dependencies]
 pytest = "^8.0.0"
