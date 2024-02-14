@@ -107,6 +107,27 @@ async def download_and_reply(message: types.Message, url: str) -> None:
         await message.answer_audio(tg_music)
 
 
+async def download_reel_and_reply(message: types.Message, url: str) -> None:
+    parsed_url = urlparse(url)
+    slug = parsed_url.path.strip('/')
+    ydl_opts = {
+        'outtmpl': f'{slug}.%(ext)s'
+    }
+
+    def download_video():
+        with YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+            return info
+
+    video_info = await asyncio.get_event_loop().run_in_executor(None, download_video)
+    video_url = video_info['url']
+    tg_file = URLInputFile(video_url)
+    try:
+        await message.reply_video(tg_file, width=video_info.get('width'), height=video_info.get('height'))
+    except exceptions.TelegramServerError:
+        await asyncio.sleep(1)
+        await message.reply_video(tg_file, width=video_info.get('width'), height=video_info.get('height'))
+
 
 @dp.message()
 async def echo_handler(message: types.Message) -> None:
@@ -120,10 +141,16 @@ async def echo_handler(message: types.Message) -> None:
         for url in extractor.gen_urls(message.text):
             if validators.url(url):
                 parsed_url = urlparse(url)
-                if parsed_url.scheme != 'https' or parsed_url.netloc != 'vm.tiktok.com':
+                if parsed_url.scheme != 'https':
                     return
                 
-                await download_and_reply(message, url)
+                if parsed_url.netloc == 'vm.tiktok.com':
+                    await download_and_reply(message, url)
+                
+                if parsed_url.netloc == 'www.instagram.com' and 'reel' in parsed_url.path:
+                    await download_reel_and_reply(message, url)
+                    
+
     except TypeError:
         raise
 
