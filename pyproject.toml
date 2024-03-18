@@ -8,7 +8,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11"
 aiogram = "^3.1.1"
-yt-dlp = "^2023.12.30"
+yt-dlp = "^2024.03.10"
 validators = "^0.22.0"
 urlextract = "^1.8.0"
 
