@@ -21,7 +21,8 @@ async def test_download_and_reply_tiktok_video():
 
     assert w == 1080
     assert h == 1918
-    
+   
+@pytest.mark.skip("Instagram rateblocks GH") 
 @pytest.mark.asyncio
 async def test_download_and_reply_reel_video():
     message_mock = AsyncMock(aiogram.types.Message)
@@ -31,7 +32,6 @@ async def test_download_and_reply_reel_video():
     res = await(download_reel_and_reply(message_mock, url))
 
     message_mock.reply_video.assert_called_once()
-
     result_file, = message_mock.reply_video.call_args.args
     w = message_mock.reply_video.call_args.kwargs['width']
     h = message_mock.reply_video.call_args.kwargs['height']
