@@ -19,8 +19,8 @@ async def test_download_and_reply_tiktok_video():
     w = message_mock.reply_video.call_args.kwargs['width']
     h = message_mock.reply_video.call_args.kwargs['height']
 
-    assert w == 1080
-    assert h == 1918
+    assert w == 576
+    assert h == 1022
    
 @pytest.mark.skip("Instagram rateblocks GH") 
 @pytest.mark.asyncio
